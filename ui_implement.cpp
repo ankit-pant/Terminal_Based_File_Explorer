@@ -34,12 +34,23 @@ void Move_Cursor_Down(){
 
 }
 
+void Paint_Screen(int rows){
+    //cout<<"\033c";
+    //cout<<"\033[3J";
+    cout<<"\033["<<rows<<";"<<1<<"H:";
+    cout<<"\033[1;1H";
+    cout<<"\t\t\tTrailblazer File Explorer\n";
+    cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n";
+    cout<<"\033[3;1H";
+
+}
+
 void Command_Mode(FILE *file_descriptor){
     struct winsize window_size;
     ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);        //gives the size of terminal window
     int rows = window_size.ws_col;          //number of rows in terminal
     cout<<"\033["<<rows<<";"<<1<<"H:";
-    cout<<"\033[1;37m";
+    //cout<<"\033[1;37m";
     string str;
     char ch1;
     ifstream instr;
@@ -69,7 +80,7 @@ void Command_Mode(FILE *file_descriptor){
         if(ch1=='\n'){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
-            cout<<"\033[1;37m";
+            //cout<<"\033[1;37m";
         }
         else{
             str+=ch1;
@@ -101,23 +112,21 @@ void Normal_Mode(){
     struct winsize window_size;
     ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);
     int rows = window_size.ws_col;
-    cout<<"\033["<<rows<<";"<<1<<"H:";
-    cout<<"\033[1;1H";
-    cout<<"\t\t\tTrailblazer File Explorer\n";
-    cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n";
+    Paint_Screen(rows);
     char ch, ch2, ch3;
     ch = ' ';
     while(ch!='q'){
         ch = getchar();
         if(ch==58){
             Command_Mode(file_descriptor);
-            cout<<"\033[0m";
+            //cout<<"\033[0m";
             cout<<"\33[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             cout<<"\033[3;1H";
+            Paint_Screen(rows);
             continue;
         }
-        else if(ch==8){
+        else if(ch==127 || ch==8){
             Goto_Up_Level();
         }
         else if(ch=='h'){
