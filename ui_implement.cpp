@@ -40,12 +40,12 @@ void Paint_Screen(int rows){
     //cout<<"\033c";
     cout<<"\033[2J";
     cout<<"\033["<<rows<<";"<<1<<"H:";
-    cout<<"\033[1;1H";
-    cout<<"\t\t\tTrailblazer File Explorer\n";
+    cout<<"\033[1;40H";
+    cout<<"Trailblazer File Explorer\n";
     cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n\n";
-    cout<<"\033[4;1H";
+    cout<<"\033[4;0H";
     List_Directory("./");
-    cout<<"\033[4;1H";
+    cout<<"\033[5;0H";
 }
 
 void Command_Mode(FILE *file_descriptor){
