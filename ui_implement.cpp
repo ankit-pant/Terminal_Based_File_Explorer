@@ -1,9 +1,10 @@
 #include "ui.h"
+#include "show_dir.h"
 #include <fstream>
 #include <iostream>
 #include <termios.h>
 #include <sys/ioctl.h>
-#include "show_dir.h"
+
 
 using namespace std;
 
@@ -28,7 +29,7 @@ void Paint_Screen(int rows,char *path){
     cout<<"Permissions";
     cout<<"\033["<<4<<";"<<83<<"H";
     cout<<"LastModified\n";
-    List_Directory(path);
+    List_Directory(path,rows);
     cout<<"\033[6;0H";
 }
 
