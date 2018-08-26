@@ -7,6 +7,31 @@
 
 using namespace std;
 
+
+void Paint_Screen(int rows,char *path){
+    //cout<<"\033c";
+    cout<<"\033[2J";
+    cout<<"\033["<<rows<<";"<<1<<"H:";
+    cout<<"\033[1;40H";
+    cout<<"Trailblazer File Explorer\n";
+    cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n\n";
+    cout<<"\033[4;0H";
+    cout<<"\033["<<4<<";"<<5<<"H";
+    cout<<"Name";
+    cout<<"\033["<<4<<";"<<28<<"H";
+    cout<<"Size";
+    cout<<"\033["<<4<<";"<<37<<"H";
+    cout<<"User Permissions";
+    cout<<"\033["<<4<<";"<<56<<"H";
+    cout<<"Group Permissions";
+    cout<<"\033["<<4<<";"<<80<<"H";
+    cout<<"LastModified\n";
+    List_Directory(path);
+    cout<<"\033[6;0H";
+}
+
+
+
 void Go_Backwards(){
     cout<<"backr";
 }
@@ -17,7 +42,7 @@ void Go_Forwards(){
 }
 
 void Goto_Home(){
-    cout<<"home";
+   Paint_Screen(80,"./");
 
 }
 
@@ -36,27 +61,7 @@ void Move_Cursor_Down(){
 
 }
 
-void Paint_Screen(int rows){
-    //cout<<"\033c";
-    cout<<"\033[2J";
-    cout<<"\033["<<rows<<";"<<1<<"H:";
-    cout<<"\033[1;40H";
-    cout<<"Trailblazer File Explorer\n";
-    cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n\n";
-    cout<<"\033[4;0H";
-    cout<<"\033["<<4<<";"<<5<<"H";
-    cout<<"Name";
-    cout<<"\033["<<4<<";"<<28<<"H";
-    cout<<"Size";
-    cout<<"\033["<<4<<";"<<37<<"H";
-    cout<<"User Permissions";
-    cout<<"\033["<<4<<";"<<56<<"H";
-    cout<<"Group Permissions";
-    cout<<"\033["<<4<<";"<<80<<"H";
-    cout<<"LastModified\n";
-    List_Directory("./");
-    cout<<"\033[6;0H";
-}
+
 
 
 
@@ -130,7 +135,8 @@ void Normal_Mode(){
     struct winsize window_size;
     ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);
     int rows = window_size.ws_col;
-    Paint_Screen(rows);
+    char *pwd = "./";
+    Paint_Screen(rows,pwd);
     char ch, ch2, ch3;
     ch = ' ';
     while(ch!='q'){
@@ -141,7 +147,7 @@ void Normal_Mode(){
             cout<<"\33[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             cout<<"\033[3;1H";
-            Paint_Screen(rows);
+            Paint_Screen(rows,pwd);
             continue;
         }
         else if(ch==127 || ch==8){
