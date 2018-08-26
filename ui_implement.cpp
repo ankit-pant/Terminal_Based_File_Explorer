@@ -44,9 +44,21 @@ void Paint_Screen(int rows){
     cout<<"Trailblazer File Explorer\n";
     cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n\n";
     cout<<"\033[4;0H";
+    cout<<"\033["<<4<<";"<<5<<"H";
+    cout<<"Name";
+    cout<<"\033["<<4<<";"<<28<<"H";
+    cout<<"Size";
+    cout<<"\033["<<4<<";"<<37<<"H";
+    cout<<"User Permissions";
+    cout<<"\033["<<4<<";"<<56<<"H";
+    cout<<"Group Permissions";
+    cout<<"\033["<<4<<";"<<80<<"H";
+    cout<<"LastModified\n";
     List_Directory("./");
-    cout<<"\033[5;0H";
+    cout<<"\033[6;0H";
 }
+
+
 
 void Command_Mode(FILE *file_descriptor){
     struct winsize window_size;
@@ -93,6 +105,9 @@ void Command_Mode(FILE *file_descriptor){
     }while(ch1!='\033');  
 
 }
+
+
+
 
 void Normal_Mode(){
      struct termios term_i, term_n;
