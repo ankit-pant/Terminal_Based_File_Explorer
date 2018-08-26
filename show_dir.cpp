@@ -3,6 +3,9 @@
  #include <sys/stat.h>
  #include <time.h>
  #include <iomanip>
+ #include <pwd.h>
+ #include <grp.h>
+
 using namespace std;
 
  void List_Directory(const char *path) 
@@ -36,7 +39,13 @@ using namespace std;
     }
     else
       cout<<file_size<<" B";
-    cout<<"\033["<<i<<";"<<44<<"H";
+    cout<<"\033["<<i<<";"<<40<<"H";
+    struct passwd *userid = getpwuid(f_stat.st_uid);
+    cout<<userid->pw_name;
+    cout<<"\033["<<i<<";"<<50<<"H";
+    struct group *groupid = getgrgid(f_stat.st_gid);
+    cout<<groupid->gr_name;
+    cout<<"\033["<<i<<";"<<64<<"H";
     int user_read,user_write,user_exe;
     user_read = f_stat.st_mode & S_IRUSR;
     user_write = f_stat.st_mode & S_IWUSR;
@@ -53,7 +62,6 @@ using namespace std;
       cout<<'x';
     else
       cout<<'-';
-    cout<<"\033["<<i<<";"<<64<<"H";
     int group_read,group_write,group_exe;
     group_read = f_stat.st_mode & S_IRGRP;
     group_write = f_stat.st_mode & S_IWGRP;
@@ -70,7 +78,23 @@ using namespace std;
       cout<<'x';
     else
       cout<<'-';
-    cout<<"\033["<<i<<";"<<76<<"H";
+    int other_read,other_write,other_exe;
+    other_read = f_stat.st_mode & S_IROTH;
+    other_write = f_stat.st_mode & S_IWOTH;
+    other_exe = f_stat.st_mode & S_IXOTH;
+    if(other_read)
+      cout<<'r';
+    else
+      cout<<'-';
+    if(other_write)
+      cout<<'w';
+    else
+      cout<<'-';
+    if(other_exe)
+      cout<<'x';
+    else
+      cout<<'-';
+    cout<<"\033["<<i<<";"<<78<<"H";
     time_t m_time = f_stat.st_mtime;
     cout<<ctime(&m_time);
     cout<<endl;
@@ -79,6 +103,7 @@ using namespace std;
     i++;
     j++;
   }
+  //cout<<"\033[6;0H";
   closedir(directory_pointer);
 }
 
