@@ -33,6 +33,10 @@ void Paint_Screen(int rows,char *path){
     cout<<"\033[6;0H";
 }
 
+void Trigger_Open(FILE *file_descriptor){
+    cout<<"Hello!\r";
+}
+
 
 
 void Go_Backwards(){
@@ -110,6 +114,7 @@ void Command_Mode(FILE *file_descriptor){
                     
                     }
                 }
+                continue;
             }
         }
        
@@ -165,6 +170,9 @@ void Normal_Mode(){
             cout<<"\033[3;1H";
             Paint_Screen(rows,pwd);
             continue;
+        }
+        else if(ch=='\n'||ch=='\r'){
+            Trigger_Open(file_descriptor);
         }
         else if(ch==127 || ch==8){
             Goto_Up_Level();
