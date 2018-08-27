@@ -4,12 +4,21 @@
 #include <iostream>
 #include <termios.h>
 #include <sys/ioctl.h>
+ #include <dirent.h>
+ #include <sys/stat.h>
+ #include <time.h>
+ #include <iomanip>
+ #include <pwd.h>
+ #include <grp.h>
 
 
 using namespace std;
 
 
-void Paint_Screen(int rows,char *path){
+
+
+
+void Paint_Screen(int rows){
     //cout<<"\033c";
     cout<<"\033[2J";
     cout<<"\033[3J";
@@ -17,27 +26,52 @@ void Paint_Screen(int rows,char *path){
     cout<<"Trailblazer File Explorer\n";
     cout<<">Press : to go to command mode\t>Press Esc twice to go back to Normal Mode\t>Press q to quit\n\n";
     cout<<"\033[4;0H";
-    cout<<"\033["<<4<<";"<<5<<"H";
+    cout<<"\033["<<4<<";"<<4<<"H";
     cout<<"Name";
-    cout<<"\033["<<4<<";"<<28<<"H";
+    cout<<"\033["<<4<<";"<<32<<"H";
     cout<<"Size";
-    cout<<"\033["<<4<<";"<<37<<"H";
-    cout<<"User Info";
-    cout<<"\033["<<4<<";"<<48<<"H";
-    cout<<"Group Info";
+    cout<<"\033["<<4<<";"<<43<<"H";
+    cout<<"User";
+    cout<<"\033["<<4<<";"<<53<<"H";
+    cout<<"Group";
     cout<<"\033["<<4<<";"<<63<<"H";
     cout<<"Permissions";
     cout<<"\033["<<4<<";"<<83<<"H";
     cout<<"LastModified\n";
-    List_Directory(path,rows);
     cout<<"\033[6;0H";
 }
 
-void Trigger_Open(FILE *file_descriptor){
-    cout<<"Hello!\r";
+void List_Directory(const char *path, int rows) 
+{
+    struct dirent **entry;
+    DIR *directory_pointer;
+    directory_pointer = opendir(path);
+    if (directory_pointer == NULL) 
+    {
+        cout<<("cannot open directory\n");
+    }
+    int d,e=0,i=6;
+    int scrolling = 0;
+  //cout<<rows<<"row";
+    d = scandir(path,&entry,NULL,alphasort);
+    int total_files = 0, total_folders = 0;
+    for(int j=0;j<d;j++){
+        if(entry[j]->d_type==DT_DIR)
+            total_folders++;
+        else if(entry[j]->d_type==DT_REG)
+            total_files++;
+    }
+    cout<<"\033["<<rows<<";"<<1<<"H";
+    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+    while(e<d && scrolling <rows-6){
+        Print_Directory(entry,e,i);
+        scrolling++;
+        e++;
+        i++;
+    }
+    closedir(directory_pointer);
+    cout<<"\033[6;0H";
 }
-
-
 
 void Go_Backwards(){
     cout<<"back\r";
@@ -48,13 +82,11 @@ void Go_Forwards(){
     
 }
 
-void Goto_Home(FILE *file_descriptor){
-    struct winsize window_size;
-    ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);  
-    int rows = window_size.ws_col; 
+void Goto_Home(int rows){
     cout<<"\033[2J";
     cout<<"\033[3J";
-    Paint_Screen(rows,"./");
+    Paint_Screen(rows);
+    List_Directory("./",rows);
 
 }
 
@@ -77,10 +109,8 @@ void Move_Cursor_Down(){
 
 
 
-void Command_Mode(FILE *file_descriptor){
-    struct winsize window_size;
-    ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);        //gives the size of terminal window
-    int rows = window_size.ws_col;          //number of rows in terminal
+void Command_Mode(int rows){
+    
     cout<<"\033["<<rows<<";"<<1<<"H\033[K:";
     //cout<<"\033[1;37m";
     string str;
@@ -96,15 +126,18 @@ void Command_Mode(FILE *file_descriptor){
             cout<<' ';
             cout<<"\033[D";
         }
+        
         if(ch1=="\033"){
             ch2 = cin.get();
             if(cin.eof()){
                 cout<<"Yes!";
                 ch2='\033';
+                ch3 = getchar();
                 continue;
             }
             else{
                 if(ch2==91){
+                    ch1=" ";
                     ch3 = cin.get();
                     if(ch3==67){
                         cout<<"\033[C";
@@ -128,7 +161,7 @@ void Command_Mode(FILE *file_descriptor){
             cout<<ch1;       //outputting character as echo is off
         }
             
-    }while(ch2!='\033');  
+    }while(ch1!="\033");  
 
 }
 
@@ -155,30 +188,34 @@ void Normal_Mode(){
     tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
     struct winsize window_size;
     ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);
-    int rows = window_size.ws_col;
+    const int rows = window_size.ws_row;
     char *pwd = "./";
-    Paint_Screen(rows,pwd);
+    Paint_Screen(rows);
+    List_Directory(pwd,rows);
     char ch, ch2, ch3;
     ch = ' ';
     while(ch!='q'){
         ch = getchar();
         if(ch==58){
-            Command_Mode(file_descriptor);
+            Command_Mode(rows);
             //cout<<"\033[0m";
             cout<<"\33[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             cout<<"\033[3;1H";
-            Paint_Screen(rows,pwd);
+            Paint_Screen(rows);
+            List_Directory(pwd,rows);
             continue;
         }
-        else if(ch=='\n'||ch=='\r'){
-            Trigger_Open(file_descriptor);
+
+        if(ch=='\n'||ch=='\r'){
+            cout<<"Enter pressed\r";
         }
+
         else if(ch==127 || ch==8){
             Goto_Up_Level();
         }
         else if(ch=='h'){
-            Goto_Home(file_descriptor);
+            Goto_Home(rows);
         }
         else if (ch=='\033') {
             ch2 = getchar();  
@@ -186,17 +223,21 @@ void Normal_Mode(){
                 ch='q';
             }
             if(ch2=='h'){
-                 Goto_Home(file_descriptor);
+                 Goto_Home(rows);
             }      
+            if(ch2=='\n'||ch2=='\r'){
+            cout<<"Enter pressed\r";
+            }
             if(ch2==58)  {
-                Command_Mode(file_descriptor);
+                Command_Mode(rows);
                 //cout<<"\033[0m";
                 cout<<"\33[2K";
                 cout<<"\033["<<rows<<";"<<1<<"H:";
                 cout<<"\033[3;1H";
-                Paint_Screen(rows,pwd);
+                Paint_Screen(rows);
                 continue;
             } 
+           
             if(ch2==91){
                 ch3 = getchar();
                  //Up Arrow 65, Down Arrow 66, Left Arrow 68, Right Arrow 67
