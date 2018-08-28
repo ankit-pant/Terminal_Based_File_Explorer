@@ -29,7 +29,7 @@ void Go_Forwards(){
 }
 
 
-void Print_Tempelate(){
+void Print_Template(){
     cout<<"\033[2J";
     cout<<"\033[3J";
     cout<<"\033[1;40H";
@@ -54,7 +54,7 @@ void Print_Tempelate(){
 void List_Directory(const char *path, int rows) 
 {
    
-    Print_Tempelate();
+    Print_Template();
     
     struct dirent **entry;
     DIR *directory_pointer;
