@@ -59,6 +59,8 @@ using namespace std;
   /* **********************   */
   /*    Outputting Data       */
   /* ***********************  */
+
+  
   cout<<"\033["<<i<<";"<<0<<"H";
   cout<<(entry[e]->d_name);
   cout<<"\033["<<i<<";"<<31<<"H";
@@ -124,6 +126,7 @@ using namespace std;
 
   cout<<"\033["<<i<<";"<<78<<"H";
   cout<<ctime(&m_time);
+  cout<<"\n";
 }
   
 
