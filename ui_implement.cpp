@@ -231,7 +231,7 @@ void Command_Mode(int rows){
     
     cout<<"\033["<<rows<<";"<<1<<"H\033[K:";
     //cout<<"\033[1;37m";
-    string str;
+    string str = "";
     string ch1;
     char ch2, ch3;
    do {
@@ -281,6 +281,8 @@ void Command_Mode(int rows){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             Process_Commands(str);
+            str = "";
+            continue;
         }
         
         else {
@@ -289,9 +291,7 @@ void Command_Mode(int rows){
         }
         
             
-    }while(ch1!="\033");  
-
-    
+    }while(ch1!="\033");     
 
 }
 
