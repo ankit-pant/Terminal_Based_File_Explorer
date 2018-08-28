@@ -29,16 +29,7 @@ void Go_Forwards(){
 }
 
 
-void Goto_Up_Level(){
-    cout<<"level up\n";
-
-}
-
-
-
-
-void List_Directory(const char *path, int rows) 
-{
+void Print_Tempelate(){
     cout<<"\033[2J";
     cout<<"\033[3J";
     cout<<"\033[1;40H";
@@ -57,6 +48,14 @@ void List_Directory(const char *path, int rows)
     cout<<"Permissions";
     cout<<"\033["<<4<<";"<<83<<"H";
     cout<<"LastModified\n";
+}
+
+    
+void List_Directory(const char *path, int rows) 
+{
+   
+    Print_Tempelate();
+    
     struct dirent **entry;
     DIR *directory_pointer;
     directory_pointer = opendir(path);
@@ -68,7 +67,6 @@ void List_Directory(const char *path, int rows)
     }
     
     int d,e=0,i=6;
-    int scrolling = 6;
     d = scandir(path,&entry,NULL,alphasort);
     int total_files = 0, total_folders = 0;
     for(int j=0;j<d;j++){
@@ -79,13 +77,13 @@ void List_Directory(const char *path, int rows)
     }
     cout<<"\033["<<rows<<";"<<1<<"H";
     cout<<"Normal Mode\t";
-    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
-    while(e<d && scrolling <rows-6){
+    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders<<"\tPath: "<<path;;
+    while(e<d && i <rows-1){
         Print_Directory(entry,e,i);
-        scrolling++;
         e++;
         i++;
     }
+    int scrolling = 6;
     closedir(directory_pointer);
     cout<<"\033[6;0H";
     scrolling = 6;
@@ -122,7 +120,7 @@ void List_Directory(const char *path, int rows)
                 file_name+=entry[i]->d_name;
                 string p = path;
                 p+=file_name;
-                const char * pth = p.c_str();
+                const char *pth = p.c_str();
                 int pid = fork();
                 if(pid==0){
                     execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
@@ -133,7 +131,11 @@ void List_Directory(const char *path, int rows)
         }
 
         else if(ch==127 || ch==8){
-            Goto_Up_Level();
+            string folder_name = "/..";
+            string p = path;
+            p+=folder_name;
+            const char *pth = p.c_str();
+            List_Directory(pth,rows);
         }
         else if(ch=='h'){
             cout<<"\033[2J";
@@ -194,11 +196,16 @@ void List_Directory(const char *path, int rows)
                     }
                 }
                 else if(ch3==66){
-                    if(scrolling<d+5 && scrolling<rows-6){
+                    if(scrolling<d+5 && scrolling<rows-2){
                         cout<<"\033[B";
                         scrolling++;
                         i++;
+                    
                     }
+                    else if(scrolling < d+5){
+                            cout<<"\nPress down arrow to view more entries";
+                            
+                        }
                 }
                 else if(ch3==67)
                     Go_Forwards();
@@ -207,6 +214,7 @@ void List_Directory(const char *path, int rows)
             }
             
         }
+        
     }
 
     

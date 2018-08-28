@@ -126,7 +126,7 @@ using namespace std;
 
   cout<<"\033["<<i<<";"<<78<<"H";
   cout<<ctime(&m_time);
-  cout<<"\n";
+  //cout<<"\n";
 }
   
 
