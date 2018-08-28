@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "show_dir.h"
+#include "commandproc.h"
 #include <fstream>
 #include <iostream>
 #include <termios.h>
@@ -279,7 +280,7 @@ void Command_Mode(int rows){
         if(ch1=="\n"){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
-            //cout<<"\033[1;37m";
+            Process_Commands(str);
         }
         
         else {
