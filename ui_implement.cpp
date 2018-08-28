@@ -43,7 +43,7 @@ void List_Directory(const char *path, int rows)
     cout<<"\033[3J";
     cout<<"\033[1;40H";
     cout<<"Trailblazer File Explorer\n";
-    cout<<">Press : to go to command mode\t>Press Esc twice to go back to Normal Mode\t>Type :q to quit\n\n";
+    cout<<">Press : to go to command mode\t>Press Esc twice to go back to Normal Mode\t>Type :Escq to quit\n";
     cout<<"\033[4;0H";
     cout<<"\033["<<4<<";"<<4<<"H";
     cout<<"Name";
@@ -62,8 +62,11 @@ void List_Directory(const char *path, int rows)
     directory_pointer = opendir(path);
     if (directory_pointer == NULL) 
     {
-        cout<<("cannot open directory\n");
+        cout<<"Error! Cannot open directory\n";
+        cout<<"path: "<<path<<"\n";
+        cout<<"Press h to go back to Home screen";
     }
+    
     int d,e=0,i=6;
     int scrolling = 6;
     d = scandir(path,&entry,NULL,alphasort);
@@ -75,6 +78,7 @@ void List_Directory(const char *path, int rows)
             total_files++;
     }
     cout<<"\033["<<rows<<";"<<1<<"H";
+    cout<<"Normal Mode\t";
     cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
     while(e<d && scrolling <rows-6){
         Print_Directory(entry,e,i);
@@ -106,16 +110,22 @@ void List_Directory(const char *path, int rows)
 
         if(ch=='\n'||ch=='\r'){
             if(entry[i]->d_type==DT_DIR){
-                    string folder_name = entry[i]->d_name;
+                    string folder_name = "/";
+                    folder_name+=entry[i]->d_name;
                     string p = path;
                     p+=folder_name;
-                    const char *pth = p.c_str();
+                    const char * pth = p.c_str();
                     List_Directory(pth,rows);
                 }
             else if(entry[i]->d_type==DT_REG){
+                string file_name = "/";
+                file_name+=entry[i]->d_name;
+                string p = path;
+                p+=file_name;
+                const char * pth = p.c_str();
                 int pid = fork();
                 if(pid==0){
-                    execl("/usr/bin/xdg-open","xdg-open",entry[i]->d_name, (char*)0);
+                    execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
                 }
                 wait(NULL);
                 List_Directory(path,rows);
@@ -139,12 +149,26 @@ void List_Directory(const char *path, int rows)
             }      
             if(ch2=='\n'||ch2=='\r'){
                 if(entry[i]->d_type==DT_DIR){
-                    string folder_name = entry[i]->d_name;
+                    string folder_name = "/";
+                    folder_name+=entry[i]->d_name;
                     string p = path;
                     p+=folder_name;
-                    const char *pth = p.c_str();
+                    const char * pth = p.c_str();
                     List_Directory(pth,rows);
                 }
+                else if(entry[i]->d_type==DT_REG){
+                    string file_name = "/";
+                    file_name+=entry[i]->d_name;
+                    string p = path;
+                    p+=file_name;
+                    const char * pth = p.c_str();
+                    int pid = fork();
+                    if(pid==0){
+                        execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
+                }
+                wait(NULL);
+                List_Directory(path,rows);
+            }
             }
             if(ch2==58)  {
                 Command_Mode(rows);
@@ -220,6 +244,14 @@ void Command_Mode(int rows){
                 ch3 = getchar();
                 continue;
             }
+            else if(ch2=='q'){
+            tcsetattr(fileno(file_descriptor),TCSANOW,&term_i);
+            cout<<"\033[0m";
+            cout<<"\033[60;1H";
+            cout<<"\033c";
+            cout<<"\033[3J";
+            exit(0);
+        }
             else{
                 if(ch2==91){
                     ch1=" ";
@@ -241,14 +273,7 @@ void Command_Mode(int rows){
             cout<<"\033["<<rows<<";"<<1<<"H:";
             //cout<<"\033[1;37m";
         }
-        else if(ch1=="q"){
-            tcsetattr(fileno(file_descriptor),TCSANOW,&term_i);
-            cout<<"\033[0m";
-            cout<<"\033[60;1H";
-            cout<<"\033c";
-            cout<<"\033[3J";
-            exit(0);
-        }
+        
         else {
             str+=ch1;
             cout<<ch1;       //outputting character as echo is off
