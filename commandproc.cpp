@@ -1,4 +1,5 @@
 #include "commandproc.h"
+#include "ui.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -96,24 +97,63 @@ void Copy_Stub(vector<string> &str){
 
 }
 
-void Move_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Move Stub";
-}
+
 
 void Rename_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Rename Stub";    
+    string old_file_name;
+    string new_file_name;
+    vector<string>::iterator filenames = str.begin();
+    filenames++;
+    old_file_name = *filenames;
+    filenames++;
+    new_file_name = *filenames;
+    const char* old_name = old_file_name.c_str();
+    const char* new_name = new_file_name.c_str();
+    rename(old_name,new_name);
 }
 
-void Create_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Create Stub";
+void Create_File_Stub(vector<string> &str){
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string file_name = *iter;
+    iter++;
+    string location = *iter;
+    location+="/"+file_name;
+    const char* file_path = location.c_str();
+    ofstream new_file;
+    new_file.open(file_path,ios::out);
+    new_file.close();
 }
 
-void Delete_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Delete Stub";
+void Create_Directory_Stub(vector<string> &str){
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string dir_name = *iter;
+    iter++;
+    string location = *iter;
+    location+= "/"+dir_name;
+    const char *dir_path = location.c_str();
+    mkdir(dir_path,S_IRWXU);
+}
+
+void Delete_File_Stub(vector<string> &str){
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string file_name = *iter;
+    const char* file_path = file_name.c_str();
+    unlink(file_path);
+}
+void Delete_Directory_Stub(vector<string> &str){
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string dir_name = *iter;
+    const char* file_path = dir_name.c_str();
+    rmdir(file_path);
+}
+
+void Move_Stub(vector<string> &str){
+    Copy_Stub(str);
+    Delete_File_Stub(str);
 }
 
 void Goto_Stub(vector<string> &str){
@@ -160,12 +200,20 @@ void Process_Commands(string str){
         Rename_Stub(command_disection);
         return;
     }
-    else if(*it=="create"){
-        Create_Stub(command_disection);
+    else if(*it=="create_file"){
+        Create_File_Stub(command_disection);
         return;
     }
-    else if(*it=="delete"){
-        Delete_Stub(command_disection);
+    else if(*it=="create_dir"){
+        Create_Directory_Stub(command_disection);
+        return;
+    }
+    else if(*it=="delete_file"){
+        Delete_File_Stub(command_disection);
+        return;
+    }
+    else if(*it=="delete_dir"){
+        Delete_Directory_Stub(command_disection);
         return;
     }
     else if(*it=="goto"){

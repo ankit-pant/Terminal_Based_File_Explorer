@@ -94,7 +94,7 @@ void List_Directory(const char *path, int rows)
     while(1){
         ch = getchar();
         if(ch==58){
-            Command_Mode(rows);
+            Command_Mode(path,rows);
             /*cout<<"\033["<<rows<<";"<<1<<"H";
             cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
             cout<<"\033[6;0H";*/
@@ -174,7 +174,7 @@ void List_Directory(const char *path, int rows)
             }
             }
             if(ch2==58)  {
-                Command_Mode(rows);
+                Command_Mode(path,rows);
                 /*cout<<"\033["<<rows<<";"<<1<<"H";
                 cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
                 cout<<"\033[6;0H";*/
@@ -227,7 +227,7 @@ void List_Directory(const char *path, int rows)
 
 
 
-void Command_Mode(int rows){
+void Command_Mode(const char *path, int rows){
     
     cout<<"\033["<<rows<<";"<<1<<"H\033[K:";
     //cout<<"\033[1;37m";
@@ -281,6 +281,8 @@ void Command_Mode(int rows){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             Process_Commands(str);
+            //List_Directory(path,rows);
+            
             str = "";
             continue;
         }
