@@ -133,7 +133,7 @@ void Create_Directory_Stub(vector<string> &str){
     string location = *iter;
     location+= "/"+dir_name;
     const char *dir_path = location.c_str();
-    mkdir(dir_path,S_IRWXU);
+    mkdir(dir_path,S_IRWXU|S_IRWXG);
 }
 
 void Delete_File_Stub(vector<string> &str){

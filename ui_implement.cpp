@@ -45,6 +45,36 @@ void Print_Template(){
     cout<<"LastModified\n";
 }
 
+
+void Repaint_Directory(const char *path, int rows){
+    struct dirent **entry;
+    DIR *directory_pointer;
+    directory_pointer = opendir(path);
+    
+    if (directory_pointer == NULL) 
+    {
+        cout<<"Error! Cannot open directory\n";
+        cout<<"path: "<<path<<"\n";
+        cout<<"Press h to go back to Home screen";
+    }
+    
+    int d,e=0,i=6;
+    d = scandir(path,&entry,NULL,alphasort);
+    int total_files = 0, total_folders = 0;
+    for(int j=0;j<d;j++){
+        if(entry[j]->d_type==DT_DIR)
+            total_folders++;
+        else if(entry[j]->d_type==DT_REG)
+            total_files++;
+    }
+    while(e<d && i <rows-1){
+        Print_Directory(entry,e,i);
+        e++;
+        i++;
+    }
+
+}
+
     
 void List_Directory(const char *path, int rows) 
 {
@@ -92,9 +122,6 @@ void List_Directory(const char *path, int rows)
         ch = getchar();
         if(ch==58){
             Command_Mode(path,rows);
-            /*cout<<"\033["<<rows<<";"<<1<<"H";
-            cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
-            cout<<"\033[6;0H";*/
             List_Directory(path,rows);
            
         }
@@ -177,9 +204,6 @@ void List_Directory(const char *path, int rows)
             }
             if(ch2==58)  {
                 Command_Mode(path,rows);
-                /*cout<<"\033["<<rows<<";"<<1<<"H";
-                cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
-                cout<<"\033[6;0H";*/
                 List_Directory(path,rows);
             } 
            
@@ -294,7 +318,9 @@ void Command_Mode(const char *path, int rows){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             Process_Commands(str);
-            //List_Directory(path,rows);
+            Print_Template();
+            Repaint_Directory(path,rows);
+            cout<<"\033["<<rows<<";"<<1<<"H:";
             
             str = "";
             continue;
