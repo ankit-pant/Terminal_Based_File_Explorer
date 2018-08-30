@@ -1,4 +1,4 @@
-#include "command_proc.h"
+#include "commandproc.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -6,3 +6,7 @@
 #include <fstream>
 
 using namespace std;
+
+void Process_Commands(string str){
+    return;
+}

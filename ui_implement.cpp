@@ -13,21 +13,15 @@
  #include <grp.h>
  #include <unistd.h>
  #include <sys/wait.h>
+ #include <stack>
 
 
 using namespace std;
 struct termios term_i;
 FILE *file_descriptor;
 
+stack<const char*> backwards,forwards;
 
-void Go_Backwards(){
-    cout<<"back\r";
-}
-
-void Go_Forwards(){
-    cout<<"next\r";
-    
-}
 
 
 void Print_Template(){
@@ -60,6 +54,7 @@ void List_Directory(const char *path, int rows)
     struct dirent **entry;
     DIR *directory_pointer;
     directory_pointer = opendir(path);
+    
     if (directory_pointer == NULL) 
     {
         cout<<"Error! Cannot open directory\n";
@@ -89,22 +84,17 @@ void List_Directory(const char *path, int rows)
     cout<<"\033[6;0H";
     scrolling = 6;
     i = 0;
+    
+    
     char ch, ch2, ch3;
     ch = ' ';
     while(1){
         ch = getchar();
         if(ch==58){
             Command_Mode(rows);
-            /*cout<<"\033["<<rows<<";"<<1<<"H";
-            cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
-            cout<<"\033[6;0H";*/
+            backwards.push(path);
             List_Directory(path,rows);
-            //cout<<"\033[0m";
-            /*cout<<"\33[2K";
-            cout<<"\033["<<rows<<";"<<1<<"H:";
-            cout<<"\033[3;1H";
-            */
-            continue;
+           
         }
 
         if(ch=='\n'||ch=='\r'){
@@ -114,7 +104,9 @@ void List_Directory(const char *path, int rows)
                     string p = path;
                     p+=folder_name;
                     const char * pth = p.c_str();
+                    backwards.push(path);
                     List_Directory(pth,rows);
+                    
                 }
             else if(entry[i]->d_type==DT_REG){
                 string file_name = "/";
@@ -127,6 +119,7 @@ void List_Directory(const char *path, int rows)
                     execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
                 }
                 wait(NULL);
+                backwards.push(path);
                 List_Directory(path,rows);
             }
         }
@@ -136,11 +129,13 @@ void List_Directory(const char *path, int rows)
             string p = path;
             p+=folder_name;
             const char *pth = p.c_str();
+            backwards.push(path);
             List_Directory(pth,rows);
         }
         else if(ch=='h'){
             cout<<"\033[2J";
             cout<<"\033[3J";
+            backwards.push(path);
             List_Directory("./",rows);
         }
         else if (ch=='\033') {
@@ -148,6 +143,7 @@ void List_Directory(const char *path, int rows)
             if(ch2=='h'){
                  cout<<"\033[2J";
                 cout<<"\033[3J";
+                backwards.push(path);
                 List_Directory("./",rows);
             }      
             if(ch2=='\n'||ch2=='\r'){
@@ -157,6 +153,8 @@ void List_Directory(const char *path, int rows)
                     string p = path;
                     p+=folder_name;
                     const char * pth = p.c_str();
+                    backwards.push(path);
+    
                     List_Directory(pth,rows);
                 }
                 else if(entry[i]->d_type==DT_REG){
@@ -170,20 +168,16 @@ void List_Directory(const char *path, int rows)
                         execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
                 }
                 wait(NULL);
+                backwards.push(path);
+
                 List_Directory(path,rows);
             }
             }
             if(ch2==58)  {
                 Command_Mode(rows);
-                /*cout<<"\033["<<rows<<";"<<1<<"H";
-                cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
-                cout<<"\033[6;0H";*/
+                backwards.push(path);
+
                 List_Directory(path,rows);
-                /*//cout<<"\033[0m";
-                cout<<"\33[2K";
-                cout<<"\033["<<rows<<";"<<1<<"H:";
-                cout<<"\033[3;1H";
-                continue;*/
             } 
            
             if(ch2==91){
@@ -208,10 +202,26 @@ void List_Directory(const char *path, int rows)
                             
                         }
                 }
-                else if(ch3==67)
-                    Go_Forwards();
-                else if(ch3==68)
-                    Go_Backwards();
+                else if(ch3==67){
+                    const char* fpath;
+                    if(!forwards.empty()){
+                        backwards.push(path);
+                        fpath = forwards.top();
+                        cout<<fpath<<" Path ";
+                        forwards.pop();
+                        List_Directory(fpath,rows);
+                    }
+
+                }
+                else if(ch3==68){
+                    const char* bpath;
+                    if(!backwards.empty()){
+                        forwards.push(path);
+                        bpath = backwards.top();
+                        backwards.pop();
+                        List_Directory(bpath,rows);
+                    }
+                }
             }
             
         }
