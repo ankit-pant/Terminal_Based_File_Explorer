@@ -1,8 +1,5 @@
 #include "commandproc.h"
-<<<<<<< HEAD
-=======
 #include "ui.h"
->>>>>>> Command_Implementation
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -12,10 +9,6 @@
 
 using namespace std;
 
-<<<<<<< HEAD
-void Process_Commands(string str){
-    return;
-=======
 void Copy_Stub(vector<string> &str){
     int len = str.size();
     vector<string>input_files;
@@ -239,5 +232,4 @@ void Process_Commands(string str){
         Restore_Stub(command_disection);
         return;
     }
->>>>>>> Command_Implementation
 }
