@@ -92,7 +92,6 @@ void List_Directory(const char *path, int rows)
         ch = getchar();
         if(ch==58){
             Command_Mode(rows);
-            backwards.push(path);
             List_Directory(path,rows);
            
         }
@@ -113,13 +112,15 @@ void List_Directory(const char *path, int rows)
                 file_name+=entry[i]->d_name;
                 string p = path;
                 p+=file_name;
+                //p = "open "+p;
+                cout<< p;
                 const char *pth = p.c_str();
+                //const char*args[]= {"open",pth};
                 int pid = fork();
                 if(pid==0){
-                    execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
+                    execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
-                backwards.push(path);
                 List_Directory(path,rows);
             }
         }
@@ -165,18 +166,14 @@ void List_Directory(const char *path, int rows)
                     const char * pth = p.c_str();
                     int pid = fork();
                     if(pid==0){
-                        execl("/usr/bin/xdg-open","xdg-open",pth, (char*)0);
+                        execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
-                backwards.push(path);
-
                 List_Directory(path,rows);
             }
             }
             if(ch2==58)  {
                 Command_Mode(rows);
-                backwards.push(path);
-
                 List_Directory(path,rows);
             } 
            
