@@ -140,6 +140,7 @@ void Delete_File_Stub(vector<string> &str){
     vector<string>::iterator iter = str.begin();
     iter++;
     string file_name = *iter;
+    //file_name = "./"+file_name;
     const char* file_path = file_name.c_str();
     unlink(file_path);
 }

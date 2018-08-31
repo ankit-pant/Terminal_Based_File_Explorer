@@ -14,6 +14,7 @@
  #include <unistd.h>
  #include <sys/wait.h>
  #include <stack>
+ #include <linux/limits.h>
 
 
 using namespace std;
@@ -22,6 +23,8 @@ FILE *file_descriptor;
 
 stack<const char*> backwards,forwards;
 
+char* root_path;
+
 
 
 void Print_Template(){
@@ -29,7 +32,7 @@ void Print_Template(){
     cout<<"\033[3J";
     cout<<"\033[1;40H";
     cout<<"Trailblazer File Explorer\n";
-    cout<<">Press : to go to command mode\t>Press Esc twice to go back to Normal Mode\t>Type :Escq to quit\n";
+    cout<<">Press : to go to command mode\t>Press Esc to go back to Normal Mode\t>Press q to quit\n";
     cout<<"\033[4;0H";
     cout<<"\033["<<4<<";"<<4<<"H";
     cout<<"Name";
@@ -76,7 +79,7 @@ void Repaint_Directory(const char *path, int rows){
 }
 
     
-void List_Directory(const char *path, int rows) 
+void List_Directory(const char *path, int rows, struct termios term_n) 
 {
    
     Print_Template();
@@ -101,9 +104,11 @@ void List_Directory(const char *path, int rows)
         else if(entry[j]->d_type==DT_REG)
             total_files++;
     }
+    //cout<<"\033[3;0H";
+    //cout<<"Path: "<<path;
     cout<<"\033["<<rows<<";"<<1<<"H";
     cout<<"Normal Mode\t";
-    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders<<"\tPath: "<<path;;
+    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;//<<"\tPath: "<<path;;
     while(e<d && i <rows-1){
         Print_Directory(entry,e,i);
         e++;
@@ -121,11 +126,19 @@ void List_Directory(const char *path, int rows)
     while(1){
         ch = getchar();
         if(ch==58){
-            Command_Mode(path,rows);
-            List_Directory(path,rows);
+
+            Command_Mode(path,rows,term_n);
+            List_Directory(path,rows,term_n);
            
         }
-
+        else if(ch=='q'){
+                tcsetattr(fileno(file_descriptor),TCSANOW,&term_i);
+                cout<<"\033[0m";
+                cout<<"\033[60;1H";
+                cout<<"\033c";
+                cout<<"\033[3J";
+                exit(0);
+        }
         if(ch=='\n'||ch=='\r'){
             if(entry[i]->d_type==DT_DIR){
                     string folder_name = "/";
@@ -134,7 +147,7 @@ void List_Directory(const char *path, int rows)
                     p+=folder_name;
                     const char * pth = p.c_str();
                     backwards.push(path);
-                    List_Directory(pth,rows);
+                    List_Directory(pth,rows,term_n);
                     
                 }
             else if(entry[i]->d_type==DT_REG){
@@ -151,7 +164,7 @@ void List_Directory(const char *path, int rows)
                     execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
-                List_Directory(path,rows);
+                List_Directory(path,rows,term_n);
             }
         }
 
@@ -161,13 +174,13 @@ void List_Directory(const char *path, int rows)
             p+=folder_name;
             const char *pth = p.c_str();
             backwards.push(path);
-            List_Directory(pth,rows);
+            List_Directory(pth,rows,term_n);
         }
         else if(ch=='h'){
             cout<<"\033[2J";
             cout<<"\033[3J";
             backwards.push(path);
-            List_Directory("./",rows);
+            List_Directory(root_path,rows,term_n);
         }
         else if (ch=='\033') {
             ch2 = getchar();  
@@ -175,7 +188,7 @@ void List_Directory(const char *path, int rows)
                  cout<<"\033[2J";
                 cout<<"\033[3J";
                 backwards.push(path);
-                List_Directory("./",rows);
+                List_Directory(root_path,rows,term_n);
             }      
             if(ch2=='\n'||ch2=='\r'){
                 if(entry[i]->d_type==DT_DIR){
@@ -186,7 +199,7 @@ void List_Directory(const char *path, int rows)
                     const char * pth = p.c_str();
                     backwards.push(path);
     
-                    List_Directory(pth,rows);
+                    List_Directory(pth,rows,term_n);
                 }
                 else if(entry[i]->d_type==DT_REG){
                     string file_name = "/";
@@ -199,12 +212,12 @@ void List_Directory(const char *path, int rows)
                         execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
-                List_Directory(path,rows);
+                List_Directory(path,rows,term_n);
             }
             }
             if(ch2==58)  {
-                Command_Mode(path,rows);
-                List_Directory(path,rows);
+                Command_Mode(path,rows,term_n);
+                List_Directory(path,rows,term_n);
             } 
            
             if(ch2==91){
@@ -222,12 +235,24 @@ void List_Directory(const char *path, int rows)
                         cout<<"\033[B";
                         scrolling++;
                         i++;
+                        if(e<d && scrolling == rows-2){
+                            Print_Template();
+                            cout<<"\033[B";
+                            cout<<"\033["<<rows<<";"<<1<<"H";
+                            cout<<"Normal Mode\t";
+                            cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;//<<"\tPath: "<<path;
+                            cout<<"\033[6;0H";
+                            i = 6;
+                            while(e<d && i <rows-1){
+                                Print_Directory(entry,e,i);
+                                e++;
+                                i++;
+                            }
+                            cout<<"\033[6;0H";
+                            scrolling = d-e;
+                        }
                     
                     }
-                    else if(scrolling < d+5){
-                            cout<<"\nPress down arrow to view more entries";
-                            
-                        }
                 }
                 else if(ch3==67){
                     const char* fpath;
@@ -236,7 +261,7 @@ void List_Directory(const char *path, int rows)
                         fpath = forwards.top();
                         cout<<fpath<<" Path ";
                         forwards.pop();
-                        List_Directory(fpath,rows);
+                        List_Directory(fpath,rows,term_n);
                     }
 
                 }
@@ -246,7 +271,7 @@ void List_Directory(const char *path, int rows)
                         forwards.push(path);
                         bpath = backwards.top();
                         backwards.pop();
-                        List_Directory(bpath,rows);
+                        List_Directory(bpath,rows,term_n);
                     }
                 }
             }
@@ -264,43 +289,34 @@ void List_Directory(const char *path, int rows)
 
 
 
-void Command_Mode(const char *path, int rows){
+void Command_Mode(const char *path, int rows, struct termios term_n){
     
+    chdir(path);
+    //cout<<"\033[3;0H";
+    //cout<<"Path: "<<path;
     cout<<"\033["<<rows<<";"<<1<<"H\033[K:";
-    //cout<<"\033[1;37m";
+    term_n.c_cc[VMIN] = 1;
+    term_n.c_cc[VTIME] = 0;
+    tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
     string str = "";
-    string ch1;
+    char ch1;
     char ch2, ch3;
-   do {
+    cin.clear(); 
+    cout<<"\033[2K";
+    cout<<"\033["<<rows<<";"<<1<<"H:";
+    while(1) {
+        cin.clear(); 
+        cout.clear();
         ch1 = getchar();
-        char backspc1 = 127;
-        string chck_bksp = "";
-        chck_bksp+=backspc1;
-        if(ch1.compare(chck_bksp)==0){
-            cout<<"\033[D";
-            cout<<' ';
-            cout<<"\033[D";
-        }
-        
-        if(ch1=="\033"){
+        if(ch1==27){
+            term_n.c_cc[VMIN] = 0;
+            term_n.c_cc[VTIME] = 1;
+            tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
             ch2 = cin.get();
-            if(cin.eof()){
-                cout<<"Yes!";
-                ch2='\033';
-                ch3 = getchar();
-                continue;
-            }
-            else if(ch2=='q'){
-            tcsetattr(fileno(file_descriptor),TCSANOW,&term_i);
-            cout<<"\033[0m";
-            cout<<"\033[60;1H";
-            cout<<"\033c";
-            cout<<"\033[3J";
-            exit(0);
-        }
+            if(ch2==-1)
+                break;
             else{
                 if(ch2==91){
-                    ch1=" ";
                     ch3 = cin.get();
                     if(ch3==67){
                         cout<<"\033[C";
@@ -310,11 +326,20 @@ void Command_Mode(const char *path, int rows){
                     
                     }
                 }
-                continue;
-            }
+            }   
+
         }
+
+    
+        else if(ch1==127){       //backspace
+            cout<<"\033[D";
+            cout<<' ';
+            cout<<"\033[D";
+        }
+        
+        
        
-        if(ch1=="\n"){
+        else if(ch1=='\n'){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             Process_Commands(str);
@@ -330,10 +355,12 @@ void Command_Mode(const char *path, int rows){
             str+=ch1;
             cout<<ch1;       //outputting character as echo is off
         }
-        
-            
-    }while(ch1!="\033");     
-
+        term_n.c_cc[VMIN] = 1;
+        term_n.c_cc[VTIME] = 0;
+        tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
+       
+    } 
+    chdir(root_path);
 }
 
 
@@ -359,6 +386,8 @@ void Normal_Mode(){
     struct winsize window_size;
     ioctl(fileno(file_descriptor),TIOCGWINSZ, &window_size);
     const int rows = window_size.ws_row;
-    char *pwd = "./";
-    List_Directory(pwd,rows);
+    size_t psize = pathconf(".",_PC_PATH_MAX);
+    char *tbuf = new char[psize];
+    root_path = getcwd(tbuf,psize);
+    List_Directory(root_path,rows,term_n);
 }
