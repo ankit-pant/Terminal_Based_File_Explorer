@@ -5,6 +5,7 @@
  #include <iomanip>
  #include <pwd.h>
  #include <grp.h>
+ #include <string>
  #include "ui.h"
 
 using namespace std;
@@ -62,7 +63,12 @@ using namespace std;
 
   
   cout<<"\033["<<i<<";"<<0<<"H";
-  cout<<(entry[e]->d_name);
+  string dir_name =entry[e]->d_name;
+  if (dir_name.length()>25){
+    dir_name = dir_name.substr(0,22);
+    dir_name +="...";
+  }
+  cout<<dir_name;
   cout<<"\033["<<i<<";"<<31<<"H";
 
   if(flag){
