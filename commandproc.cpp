@@ -11,6 +11,11 @@ using namespace std;
 
 void Copy_Stub(vector<string> &str){
     int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: copy filename(s) directory. Press Esc to continue";
+        cin.get();
+        return;
+    }
     vector<string>input_files;
     vector<string>output_files;
     vector<string>::iterator original_string_iter = str.begin();
@@ -59,8 +64,8 @@ void Copy_Stub(vector<string> &str){
         copy_source.open(*input_files_iter,ios::in);
         copy_dest.open(*output_files_iter,ios::out);
         if(!copy_source){
-            cout<<"\033[K";
-            cout<<"Cannot Open File\n";
+            cout<<"Cannot Open File. Press Esc to continue";
+            cin.get();
             return;
         }
         else{
@@ -102,6 +107,12 @@ void Copy_Stub(vector<string> &str){
 
 
 void Rename_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: rename filename_old filename_new. Press Esc to continue";
+        cin.get();
+        return;
+    }
     string old_file_name;
     string new_file_name;
     vector<string>::iterator filenames = str.begin();
@@ -115,6 +126,12 @@ void Rename_Stub(vector<string> &str){
 }
 
 void Create_File_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: create_file filename directory. Press Esc to continue";
+        cin.get();
+        return;
+    }
     vector<string>::iterator iter = str.begin();
     iter++;
     string file_name = *iter;
@@ -128,6 +145,12 @@ void Create_File_Stub(vector<string> &str){
 }
 
 void Create_Directory_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: create_dir directory path. Press Esc to continue";
+        cin.get();
+        return;
+    }
     vector<string>::iterator iter = str.begin();
     iter++;
     string dir_name = *iter;
@@ -139,6 +162,12 @@ void Create_Directory_Stub(vector<string> &str){
 }
 
 void Delete_File_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<2){
+        cout<<"Invalid Command. Usage: delete_file path/filename Press Esc to continue";
+        cin.get();
+        return;
+    }
     vector<string>::iterator iter = str.begin();
     iter++;
     string file_name = *iter;
@@ -147,6 +176,12 @@ void Delete_File_Stub(vector<string> &str){
     unlink(file_path);
 }
 void Delete_Directory_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<2){
+        cout<<"Invalid Command. Usage: delete_dir path/directory. Press Esc to continue";
+        cin.get();
+        return;
+    }
     vector<string>::iterator iter = str.begin();
     iter++;
     string dir_name = *iter;
@@ -155,11 +190,23 @@ void Delete_Directory_Stub(vector<string> &str){
 }
 
 void Move_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: move filename directory. Press Esc to continue";
+        cin.get();
+        return;
+    }
     Copy_Stub(str);
     Delete_File_Stub(str);
 }
 
 void Goto_Stub(vector<string> &str,int rows, struct termios term_n,char *root_path){
+    int len = str.size();
+    if(len<2){
+        cout<<"Invalid Command. Usage: goto path. Press Esc to continue";
+        cin.get();
+        return;
+    }
     chdir(root_path);
     vector<string>::iterator iter = str.begin();
     iter++;
@@ -171,18 +218,31 @@ void Goto_Stub(vector<string> &str,int rows, struct termios term_n,char *root_pa
     List_Directory(goto_pth,rows,term_n);}
 
 void Search_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<2){
+        cout<<"Invalid Command. Usage: search filename. Press Esc to continue";
+        cin.get();
+        return;
+    }
     cout<<"\033[K";
     cout<<"@ Search Stub";
 }
 
 void Snapshot_Stub(vector<string> &str){
+    int len = str.size();
+    if(len<3){
+        cout<<"Invalid Command. Usage: snapshot directory dump_file. Press Esc to continue";
+        cin.get();
+        return;
+    }
     cout<<"\033[K";
     cout<<"@ Snapshot Stub";
 }
 
 void Restore_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Restore Stub";
+    cout<<"@ Restore Stub... Coming Soon. Press Esc to continue";
+    cin.get();
+    return;
 }
 
 
@@ -240,5 +300,9 @@ void Process_Commands(string str,int rows,struct termios term_n,char *root_path)
     else if(*it=="restore"){
         Restore_Stub(command_disection);
         return;
+    }
+    else{
+        cout<<"Invalid Command. Press Esc to continue";
+        cin.get();
     }
 }
