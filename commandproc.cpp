@@ -45,6 +45,7 @@ void Copy_Stub(vector<string> &str){
         }
         temp_input_disection_iter--;
         string temp2 = *temp_input_disection_iter;
+        //temp2+="/";
         *output_files_iter+="/"+temp2;
         
     }
@@ -60,6 +61,7 @@ void Copy_Stub(vector<string> &str){
         if(!copy_source){
             cout<<"\033[K";
             cout<<"Cannot Open File\n";
+            return;
         }
         else{
         copy_dest<<copy_source.rdbuf();
@@ -157,10 +159,16 @@ void Move_Stub(vector<string> &str){
     Delete_File_Stub(str);
 }
 
-void Goto_Stub(vector<string> &str){
-    cout<<"\033[K";
-    cout<<"@ Goto Stub";
-}
+void Goto_Stub(vector<string> &str,int rows, struct termios term_n,char *root_path){
+    chdir(root_path);
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string path = *iter;
+    if(path=="/"){
+        path = root_path;
+    }
+    const char* goto_pth = path.c_str();
+    List_Directory(goto_pth,rows,term_n);}
 
 void Search_Stub(vector<string> &str){
     cout<<"\033[K";
@@ -178,7 +186,7 @@ void Restore_Stub(vector<string> &str){
 }
 
 
-void Process_Commands(string str){
+void Process_Commands(string str,int rows,struct termios term_n,char *root_path){
     vector<string> command_disection;
     string temp;
     stringstream strstreem(str);  
@@ -218,7 +226,7 @@ void Process_Commands(string str){
         return;
     }
     else if(*it=="goto"){
-        Goto_Stub(command_disection);
+        Goto_Stub(command_disection,rows,term_n,root_path);
         return;
     }
     else if(*it=="search"){

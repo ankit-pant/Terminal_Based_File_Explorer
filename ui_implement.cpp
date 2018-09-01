@@ -78,7 +78,9 @@ void Repaint_Directory(const char *path, int rows){
 
 }
 
-    
+
+
+
 void List_Directory(const char *path, int rows, struct termios term_n) 
 {
    
@@ -86,6 +88,10 @@ void List_Directory(const char *path, int rows, struct termios term_n)
     
     struct dirent **entry;
     DIR *directory_pointer;
+    string rp = path;
+    if(rp=="/"){
+        path = root_path;
+    }
     directory_pointer = opendir(path);
     
     if (directory_pointer == NULL) 
@@ -335,6 +341,7 @@ void Command_Mode(const char *path, int rows, struct termios term_n){
             cout<<"\033[D";
             cout<<' ';
             cout<<"\033[D";
+            str = str.substr(0,str.length()-1);
         }
         
         
@@ -342,7 +349,8 @@ void Command_Mode(const char *path, int rows, struct termios term_n){
         else if(ch1=='\n'){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
-            Process_Commands(str);
+            Process_Commands(str,rows,term_n,root_path);
+            chdir(root_path);
             Print_Template();
             Repaint_Directory(path,rows);
             cout<<"\033["<<rows<<";"<<1<<"H:";
@@ -360,7 +368,7 @@ void Command_Mode(const char *path, int rows, struct termios term_n){
         tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
        
     } 
-    chdir(root_path);
+    
 }
 
 
