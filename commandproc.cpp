@@ -17,6 +17,7 @@
 
 using namespace std;
 
+
 //Process the copy command
 void Copy_Stub(vector<string> &str){
     int len = str.size();
@@ -275,8 +276,7 @@ void Print_Dir_Dump(string path, struct dirent **entry,int dir_list, string dump
     dump_file.close();
 }
 
-//Helper function for snapshot command
-//traverses each sub-directory
+//Helper function to traverse directories recursively
 
 void Traverse_dir(const char *path, string dump_file){
     struct dirent **entry;
@@ -298,6 +298,7 @@ void Traverse_dir(const char *path, string dump_file){
     }
 
 }
+
 
 //Process the snapshot stub
 void Snapshot_Stub(vector<string> &str){

@@ -10,16 +10,16 @@
 #include <iostream>
 #include <termios.h>
 #include <sys/ioctl.h>
- #include <dirent.h>
- #include <sys/stat.h>
- #include <time.h>
- #include <iomanip>
- #include <pwd.h>
- #include <grp.h>
- #include <unistd.h>
- #include <sys/wait.h>
- #include <stack>
- #include <linux/limits.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <iomanip>
+#include <pwd.h>
+#include <grp.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stack>
+#include <linux/limits.h>
 
 
 using namespace std;

@@ -11,6 +11,5 @@ using namespace std;
 
 int main(){
     Normal_Mode();              //Initiates the Normal Mode function that changes various terminal settings and initiates UI buildup
-   
     return 0;
 }
