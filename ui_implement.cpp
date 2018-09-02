@@ -70,12 +70,7 @@ void Repaint_Directory(const char *path, int rows){
         else if(entry[j]->d_type==DT_REG)
             total_files++;
     }
-    while(e<d && i <rows-1){
-        Print_Directory(entry,e,i);
-        e++;
-        i++;
-    }
-
+        Print_Directory(entry,d,e,rows);
 }
 
 
@@ -101,30 +96,30 @@ void List_Directory(const char *path, int rows, struct termios term_n)
         cout<<"Press h to go back to Home screen";
     }
     
-    int d,e=0,i=6;
-    d = scandir(path,&entry,NULL,alphasort);
+    int dir_list;
+    int cur_index = 6;
+    int dir_index = 0;
+    dir_list = scandir(path,&entry,NULL,alphasort);
     int total_files = 0, total_folders = 0;
-    for(int j=0;j<d;j++){
+    for(int j=0;j<dir_list;j++){
         if(entry[j]->d_type==DT_DIR)
             total_folders++;
         else if(entry[j]->d_type==DT_REG)
             total_files++;
     }
-    //cout<<"\033[3;0H";
-    //cout<<"Path: "<<path;
+
     cout<<"\033["<<rows<<";"<<1<<"H";
     cout<<"Normal Mode\t";
-    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;//<<"\tPath: "<<path;;
-    while(e<d && i <rows-1){
-        Print_Directory(entry,e,i);
-        e++;
-        i++;
-    }
-    int scrolling = 6;
+    cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+    Print_Directory(entry, dir_list, dir_index,rows);
+    int scrolling_pos;
     closedir(directory_pointer);
     cout<<"\033[6;0H";
-    scrolling = 6;
-    i = 0;
+    
+    int lower_screen_limit = rows-1;
+    int upper_screen_limit = 6;
+    scrolling_pos = upper_screen_limit;
+    dir_index = 0;
     
     
     char ch, ch2, ch3;
@@ -146,9 +141,9 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                 exit(0);
         }
         if(ch=='\n'||ch=='\r'){
-            if(entry[i]->d_type==DT_DIR){
+            if(entry[dir_index]->d_type==DT_DIR){
                     string folder_name = "/";
-                    folder_name+=entry[i]->d_name;
+                    folder_name+=entry[dir_index]->d_name;
                     string p = path;
                     p+=folder_name;
                     const char * pth = p.c_str();
@@ -156,9 +151,9 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                     List_Directory(pth,rows,term_n);
                     
                 }
-            else if(entry[i]->d_type==DT_REG){
+            else if(entry[dir_index]->d_type==DT_REG){
                 string file_name = "/";
-                file_name+=entry[i]->d_name;
+                file_name+=entry[dir_index]->d_name;
                 string p = path;
                 p+=file_name;
                 //p = "open "+p;
@@ -197,9 +192,9 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                 List_Directory(root_path,rows,term_n);
             }      
             if(ch2=='\n'||ch2=='\r'){
-                if(entry[i]->d_type==DT_DIR){
+                if(entry[dir_index]->d_type==DT_DIR){
                     string folder_name = "/";
-                    folder_name+=entry[i]->d_name;
+                    folder_name+=entry[dir_index]->d_name;
                     string p = path;
                     p+=folder_name;
                     const char * pth = p.c_str();
@@ -207,9 +202,9 @@ void List_Directory(const char *path, int rows, struct termios term_n)
     
                     List_Directory(pth,rows,term_n);
                 }
-                else if(entry[i]->d_type==DT_REG){
+                else if(entry[dir_index]->d_type==DT_REG){
                     string file_name = "/";
-                    file_name+=entry[i]->d_name;
+                    file_name+=entry[dir_index]->d_name;
                     string p = path;
                     p+=file_name;
                     const char * pth = p.c_str();
@@ -230,42 +225,55 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                 ch3 = getchar();
                  //Up Arrow 65, Down Arrow 66, Left Arrow 68, Right Arrow 67
                 if(ch3==65){
-                    if(scrolling>6){
+
+                    if(cur_index==rows){
+                        Print_Template();
+                        Print_Directory(entry,dir_list,0,rows);
+                        cout<<"\033["<<rows<<";"<<1<<"H";
+                        cout<<"Normal Mode\t";
+                        cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+                        cout<<"\033["<<rows<<";"<<1<<"H";
+                        scrolling_pos = rows;
+                        cur_index = rows-1;
+                        dir_index++;
+                    }
+                    if(scrolling_pos>upper_screen_limit){
+                        scrolling_pos--;
                         cout<<"\033[A";
-                        scrolling--;
-                        i--;
+                        dir_index--;
+                        cur_index--;
+                        //cout<<dir_index<<" "<<scrolling_pos<<" "<<cur_index<<"N\r";
                     }
                 }
                 else if(ch3==66){
-                    if(scrolling<d+5 && scrolling<rows-2){
-                        cout<<"\033[B";
-                        scrolling++;
-                        i++;
-                        if(e<d && scrolling == rows-2){
-                            Print_Template();
-                            cout<<"\033[B";
-                            cout<<"\033["<<rows<<";"<<1<<"H";
-                            cout<<"Normal Mode\t";
-                            cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;//<<"\tPath: "<<path;
-                            cout<<"\033[6;0H";
-                            i = 6;
-                            while(e<d && i <rows-1){
-                                Print_Directory(entry,e,i);
-                                e++;
-                                i++;
-                            }
-                            cout<<"\033[6;0H";
-                            scrolling = d-e;
-                        }
-                    
+
+                    if(cur_index==rows-1){
+                        Print_Template();
+                        Print_Directory(entry,dir_list,dir_index,rows);
+                        cout<<"\033["<<rows<<";"<<1<<"H";
+                        cout<<"Normal Mode\t";
+                        cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+                        cout<<"\033[05H";
+                        scrolling_pos--;
+                        dir_index--;
                     }
+                    
+                    if(scrolling_pos<dir_list+5){
+                        scrolling_pos++;
+                        cur_index++;
+                        cout<<"\033[B";
+                        dir_index++;
+                        //cout<<dir_index<<" "<<scrolling_pos<<" "<<cur_index<<"\r";
+                        
+                    }
+                   
                 }
                 else if(ch3==67){
                     const char* fpath;
                     if(!forwards.empty()){
                         backwards.push(path);
                         fpath = forwards.top();
-                        cout<<fpath<<" Path ";
+                        //cout<<fpath<<" Path ";
                         forwards.pop();
                         List_Directory(fpath,rows,term_n);
                     }
