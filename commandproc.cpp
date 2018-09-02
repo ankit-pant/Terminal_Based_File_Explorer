@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fstream>
  #include <sys/stat.h>
+ #include <dirent.h>
 
 using namespace std;
 
@@ -255,6 +256,48 @@ void Search_Stub(vector<string> &str){
     cout<<"@ Search Stub";
 }
 
+//Helper function for snapshot command
+//prints directory information to dump file
+
+void Print_Dir_Dump(string path, struct dirent **entry,int dir_list, string dump){
+    ofstream dump_file;
+    dump_file.open(dump,ios::app);
+    dump_file<<path<<":\n";
+    int i = 0;
+     while(i<dir_list){
+        string name = entry[i]->d_name;
+        if(name[0]!='.' && name!="..")
+            dump_file<<name<<"\t ";
+        i++;
+    }
+    dump_file<<"\n\n";
+    dump_file.close();
+}
+
+//Helper function for snapshot command
+//traverses each sub-directory
+
+void Traverse_dir(const char *path, string dump_file){
+    struct dirent **entry;
+    int dir_list = scandir(path,&entry,NULL,alphasort);
+    Print_Dir_Dump(path,entry,dir_list,dump_file);
+    for(int i=2;i<dir_list;i++){
+        if(entry[i]->d_type==DT_DIR){
+            string pth = path;
+            string name = entry[i]->d_name;
+            if(name[0]=='.'){
+                continue;
+            }
+            string pathname = pth;
+            pathname+="/";
+            pathname+=name;
+            const char *p = pathname.c_str();
+            Traverse_dir(p,dump_file);
+        }
+    }
+
+}
+
 //Process the snapshot stub
 void Snapshot_Stub(vector<string> &str){
     int len = str.size();
@@ -264,8 +307,13 @@ void Snapshot_Stub(vector<string> &str){
         cin.get();
         return;
     }
-    cout<<"\033[K";
-    cout<<"@ Snapshot Stub";
+    vector<string>::iterator iter = str.begin();
+    iter++;
+    string path = *iter;
+    ++iter;
+    string dump_file = *iter;
+    const char* pth = path.c_str();
+    Traverse_dir(pth,dump_file);
 }
 
 //Process the restore stub
