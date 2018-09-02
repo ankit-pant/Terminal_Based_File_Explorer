@@ -13,7 +13,7 @@ using namespace std;
  void Print_Directory(struct dirent ** entry, int dir_list, int dir_index, int rows) 
 {
   int i=6;
-  while(i<rows && dir_index<dir_list){ 
+  while(i<rows && dir_index<dir_list && dir_index>=0){ 
     bool is_dir = false;
     bool is_file = false;
     if(entry[dir_index]->d_type==DT_DIR){

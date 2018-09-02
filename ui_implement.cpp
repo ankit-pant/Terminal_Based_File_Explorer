@@ -226,16 +226,18 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                  //Up Arrow 65, Down Arrow 66, Left Arrow 68, Right Arrow 67
                 if(ch3==65){
 
-                    if(cur_index==rows){
+                    if(cur_index==upper_screen_limit){
+                        if(dir_index>0){
                         Print_Template();
-                        Print_Directory(entry,dir_list,0,rows);
+                        Print_Directory(entry,dir_list,dir_index-(rows-7),rows);
                         cout<<"\033["<<rows<<";"<<1<<"H";
                         cout<<"Normal Mode\t";
                         cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
                         cout<<"\033["<<rows<<";"<<1<<"H";
                         scrolling_pos = rows;
-                        cur_index = rows-1;
+                        cur_index = rows;
                         dir_index++;
+                        }   
                     }
                     if(scrolling_pos>upper_screen_limit){
                         scrolling_pos--;
@@ -256,6 +258,7 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                         cout<<"\033[05H";
                         scrolling_pos--;
                         dir_index--;
+                        cur_index = 5;
                     }
                     
                     if(scrolling_pos<dir_list+5){
@@ -327,8 +330,10 @@ void Command_Mode(const char *path, int rows, struct termios term_n){
             term_n.c_cc[VTIME] = 1;
             tcsetattr(fileno(file_descriptor),TCSANOW,&term_n);
             ch2 = cin.get();
-            if(ch2==-1)
+            if(ch2==-1){
+                chdir(root_path);
                 break;
+            }
             else{
                 if(ch2==91){
                     ch3 = cin.get();
@@ -358,13 +363,10 @@ void Command_Mode(const char *path, int rows, struct termios term_n){
             cout<<"\033[2K";
             cout<<"\033["<<rows<<";"<<1<<"H:";
             Process_Commands(str,rows,term_n,root_path);
-            chdir(root_path);
             Print_Template();
             Repaint_Directory(path,rows);
             cout<<"\033["<<rows<<";"<<1<<"H:";
-            
             str = "";
-            continue;
         }
         
         else {

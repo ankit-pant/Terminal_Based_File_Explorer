@@ -34,7 +34,6 @@ void Copy_Stub(vector<string> &str){
         string temp = *original_string_iter_end;
         output_files.push_back(temp);
     }
-
     vector<string> temp_input_disection;
     vector<string>::iterator output_files_iter = output_files.begin();
     for(input_files_iter = input_files.begin();input_files_iter!=input_files.end();++input_files_iter,output_files_iter++){
@@ -175,6 +174,7 @@ void Delete_File_Stub(vector<string> &str){
     const char* file_path = file_name.c_str();
     unlink(file_path);
 }
+
 void Delete_Directory_Stub(vector<string> &str){
     int len = str.size();
     if(len<2){
