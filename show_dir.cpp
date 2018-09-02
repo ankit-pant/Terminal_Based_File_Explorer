@@ -1,3 +1,8 @@
+ //Trailblazer File Explorer
+//By:
+//   Ankit Pant
+//   2018201035
+ 
  #include <iostream>
  #include <dirent.h>
  #include <sys/stat.h>
@@ -10,9 +15,11 @@
 
 using namespace std;
 
+//Prints the directory entries with required information
  void Print_Directory(struct dirent ** entry, int dir_list, int dir_index, int rows) 
 {
   int i=6;
+  //checking for bounds in the terminal window size
   while(i<rows && dir_index<dir_list && dir_index>=0){ 
     bool is_dir = false;
     bool is_file = false;
@@ -59,9 +66,9 @@ using namespace std;
     //File Modification Time
     time_t m_time = f_stat.st_mtime;
 
-    /* **********************   */
-    /*    Outputting Data       */
-    /* ***********************  */
+    // **********************   
+    //    Outputting Data       
+    // ***********************  
 
     
     cout<<"\033["<<i<<";"<<0<<"H";
@@ -70,9 +77,17 @@ using namespace std;
       dir_name = dir_name.substr(0,22);
       dir_name +="...";
     }
+    if(entry[dir_index]->d_type==DT_DIR){
+      cout<<"\033[1m";
+      cout<<"\033[34m";
+    }
+
+    //Name
     cout<<dir_name;
+    cout<<"\033[0m";
     cout<<"\033["<<i<<";"<<31<<"H";
 
+    //File size
     if(flag){
         cout<<fixed;
         cout<<setprecision(1);
@@ -81,12 +96,15 @@ using namespace std;
     else
         cout<<file_size<<" B";
 
+    //User Information
     cout<<"\033["<<i<<";"<<43<<"H";
     cout<<userid->pw_name;
 
+    //Group Information
     cout<<"\033["<<i<<";"<<53<<"H";
     cout<<groupid->gr_name;
 
+    //Permissions and kind of entry (file/folder)
     cout<<"\033["<<i<<";"<<64<<"H";
     if(is_dir)
       cout<<"d";
@@ -132,12 +150,12 @@ using namespace std;
         else
           cout<<'-';
 
+    //Last Modified Time
     cout<<"\033["<<i<<";"<<78<<"H";
     cout<<ctime(&m_time);
     dir_index++;
     i++;
   }
-  //cout<<"\n";
 }
   
 

@@ -1,3 +1,8 @@
+#Trailblazer File Explorer
+#By:
+#  Ankit Pant
+#  2018201035
+
 CC = g++
 CFLAGS = -Wall -std=c++14
 DEPS = ui.h show_dir.h commandproc.h
