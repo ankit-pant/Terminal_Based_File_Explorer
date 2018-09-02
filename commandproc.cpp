@@ -252,8 +252,9 @@ void Search_Stub(vector<string> &str){
         cin.get();
         return;
     }
-    cout<<"\033[K";
-    cout<<"@ Search Stub";
+    cout<<"@ Search Stub... Coming Soon. Press Esc to continue";
+    cin.get();
+    return;
 }
 
 //Helper function for snapshot command
