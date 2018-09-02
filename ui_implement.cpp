@@ -22,7 +22,6 @@ struct termios term_i;
 FILE *file_descriptor;
 
 stack<const char*> backwards,forwards;
-
 char* root_path;
 
 
@@ -80,7 +79,7 @@ void List_Directory(const char *path, int rows, struct termios term_n)
 {
    
     Print_Template();
-    
+    cout<<"\033[u";
     struct dirent **entry;
     DIR *directory_pointer;
     string rp = path;
@@ -127,9 +126,14 @@ void List_Directory(const char *path, int rows, struct termios term_n)
     while(1){
         ch = getchar();
         if(ch==58){
-
+            cout<<"\033[s";
             Command_Mode(path,rows,term_n);
-            List_Directory(path,rows,term_n);
+            //List_Directory(path,rows,term_n);
+            cout<<"\033["<<rows<<";"<<1<<"H";
+            cout<<"Normal Mode\t";
+            cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+            cout<<"\033[05H";
+            cout<<"\033[u";
            
         }
         else if(ch=='q'){
@@ -156,16 +160,17 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                 file_name+=entry[dir_index]->d_name;
                 string p = path;
                 p+=file_name;
-                //p = "open "+p;
-                cout<< p;
+                
                 const char *pth = p.c_str();
                 //const char*args[]= {"open",pth};
+                cout<<"\033[s";
                 int pid = fork();
                 if(pid==0){
                     execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
                 List_Directory(path,rows,term_n);
+                cout<<"\033[u";
             }
         }
 
@@ -208,17 +213,25 @@ void List_Directory(const char *path, int rows, struct termios term_n)
                     string p = path;
                     p+=file_name;
                     const char * pth = p.c_str();
+                    cout<<"\033[s";
                     int pid = fork();
                     if(pid==0){
                         execl("/usr/bin/xdg-open","xdg-open",pth, NULL);
                 }
                 wait(NULL);
                 List_Directory(path,rows,term_n);
+                cout<<"\033[u";
             }
             }
             if(ch2==58)  {
+                cout<<"\033[s";
                 Command_Mode(path,rows,term_n);
-                List_Directory(path,rows,term_n);
+                //List_Directory(path,rows,term_n);
+                cout<<"\033["<<rows<<";"<<1<<"H";
+                cout<<"Normal Mode\t";
+                cout<<"Total Files: "<<total_files<<" Total Folders: "<<total_folders;
+                cout<<"\033[05H";
+                cout<<"\033[u";
             } 
            
             if(ch2==91){
